@@ -1,0 +1,49 @@
+10
+
+dir
+0
+https://svn.arsoft.homeip.net/syscfg/packages/trac-advancedworkflow/0.11
+https://svn.arsoft.homeip.net/syscfg
+add
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+dafa5faa-33fa-417a-9101-543bec8d0801
+
+advancedworkflow
+dir
+
+
+
+add
+
+setup.py
+file
+
+
+
+add
+
+setup.cfg
+file
+
+
+
+add
+
