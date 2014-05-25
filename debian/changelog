@@ -1,3 +1,9 @@
+trac-advancedworkflow (0.11+svn13939-1~aroth~ppa2) trusty; urgency=medium
+
+  * rebuild to active distros
+
+ -- Andreas Roth <aroth@arsoft-online.com>  Sun, 25 May 2014 09:07:59 +0200
+
 trac-advancedworkflow (0.11+svn10647-1~aroth~ppa1) natty; urgency=low
 
   * First Debian package

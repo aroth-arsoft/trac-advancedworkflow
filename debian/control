@@ -1,11 +1,11 @@
 Source: trac-advancedworkflow
 Section: web
 Priority: optional
-Build-Depends-Indep: python-setuptools (> 0.5)
+Build-Depends-Indep: python-setuptools (>= 0.5)
 Build-Depends: python-support, python-all-dev, cdbs, debhelper
 Maintainer: Python Applications Packaging Team <python-apps-team@lists.alioth.debian.org>
 Uploaders: W. Martin Borgert <debacle@debian.org>
-Standards-Version: 3.8.3
+Standards-Version: 3.9.5
 XS-Python-Version: all
 Homepage: http://trac-hacks.org/wiki/AdvancedTicketWorkflowPlugin
 
