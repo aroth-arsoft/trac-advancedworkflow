@@ -1,11 +1,10 @@
 Source: trac-advancedworkflow
 Section: web
 Priority: optional
-Build-Depends-Indep: python-setuptools (>= 0.5)
-Build-Depends: python-support, python-all-dev, cdbs, debhelper
+Build-Depends: python-setuptools, python-all, debhelper (>= 9)
 Maintainer: Python Applications Packaging Team <python-apps-team@lists.alioth.debian.org>
 Uploaders: W. Martin Borgert <debacle@debian.org>
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 XS-Python-Version: all
 Homepage: http://trac-hacks.org/wiki/AdvancedTicketWorkflowPlugin
 
@@ -14,5 +13,5 @@ Architecture: all
 Depends: ${python:Depends}, ${misc:Depends}, trac
 Description: Enhances the workflow of the trac system
  AdvancedTicketWorkflowPlugin provides a number of advanced operations for 
- customizable workflows that are similar to the operations provided in the customizeable 
- workflow of the core system. 
+ customizable workflows that are similar to the operations provided in the 
+ customizeable workflow of the core system. 

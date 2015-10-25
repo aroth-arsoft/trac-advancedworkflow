@@ -1,0 +1,5 @@
+/trac-advancedworkflow/
+*.debhelper.log
+*.debhelper
+*.substvars
+/files

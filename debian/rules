@@ -1,7 +1,50 @@
 #!/usr/bin/make -f
+# -*- makefile -*-
 
-DEB_PYTHON_SYSTEM=pysupport
-DEB_SRCDIR=0.12
+PACKAGE=trac-advancedworkflow
 
-include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/class/python-distutils.mk
+DH_VERBOSE=1
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -rf build-stamp *.egg-info
+	python setup.py clean
+	-rm -rf build/
+	-rm -rf dist/
+	dh_clean 
+
+build: build-arch build-indep
+build-arch: build-stamp
+build-indep: build-stamp
+
+build-stamp:
+	dh_testdir
+	python setup.py build
+	touch $@
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	python setup.py install --root="$(CURDIR)/debian/${PACKAGE}" --no-compile
+
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_compress
+	dh_fixperms
+	dh_python2
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary-arch: build install
+
+binary: binary-indep binary-arch
+
+.PHONY: get-orig-source clean build install binary-indep binary-arch binary

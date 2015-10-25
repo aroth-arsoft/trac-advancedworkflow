@@ -1,3 +1,9 @@
+trac-advancedworkflow (0.12+svn14992-1~aroth~ppa1) wily; urgency=medium
+
+  * update to version 0.12
+
+ -- Andreas Roth <aroth@arsoft-online.com>  Sun, 25 Oct 2015 18:31:49 +0100
+
 trac-advancedworkflow (0.11+svn13939-1~aroth~ppa2) trusty; urgency=medium
 
   * rebuild to active distros
