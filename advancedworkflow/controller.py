@@ -1,9 +1,16 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2008-2014 Eli Carter <elicarter@retracile.net>
+# All rights reserved.
+#
+# This software is licensed as described in the file COPYING, which
+# you should have received as part of this distribution.
+
 """Trac plugin that provides a number of advanced operations for customizable
 workflows.
 """
 
 import os
-import time
 from datetime import datetime
 from subprocess import call
 from genshi.builder import tag
@@ -25,7 +32,7 @@ class TicketWorkflowOpBase(Component):
     implements(ITicketActionController)
     abstract = True
 
-    _op_name = None # Must be specified.
+    _op_name = None  # Must be specified.
 
     def get_configurable_workflow(self):
         controllers = TicketSystem(self.env).action_controllers
@@ -44,8 +51,8 @@ class TicketWorkflowOpBase(Component):
 
     def get_all_status(self):
         """Provide any additional status values"""
-        # We don't have anything special here; the statuses will be recognized
-        # by the default controller.
+        # We don't have anything special here; the statuses will be
+        # recognized by the default controller.
         return []
 
     # This should most likely be overridden to be more functional
@@ -53,7 +60,7 @@ class TicketWorkflowOpBase(Component):
         """Returns the action control"""
         actions = self.get_configurable_workflow().actions
         label = actions[action]['name']
-        return (label, tag(''), '')
+        return label, tag(''), ''
 
     def get_ticket_changes(self, req, ticket, action):
         """Must be implemented in subclasses"""
@@ -89,7 +96,7 @@ class TicketWorkflowOpOwnerReporter(TicketWorkflowOpBase):
         label = actions[action]['name']
         hint = 'The owner will change to %s' % ticket['reporter']
         control = tag('')
-        return (label, control, hint)
+        return label, control, hint
 
     def get_ticket_changes(self, req, ticket, action):
         """Returns the change of owner."""
@@ -118,7 +125,7 @@ class TicketWorkflowOpOwnerComponent(TicketWorkflowOpBase):
         label = actions[action]['name']
         hint = 'The owner will change to %s' % self._new_owner(ticket)
         control = tag('')
-        return (label, control, hint)
+        return label, control, hint
 
     def get_ticket_changes(self, req, ticket, action):
         """Returns the change of owner."""
@@ -127,7 +134,8 @@ class TicketWorkflowOpOwnerComponent(TicketWorkflowOpBase):
     def _new_owner(self, ticket):
         """Determines the new owner"""
         component = model.Component(self.env, name=ticket['component'])
-        self.env.log.debug("component %s, owner %s" % (component, component.owner))
+        self.env.log.debug("component %s, owner %s",
+                           component, component.owner)
         return component.owner
 
 
@@ -154,7 +162,7 @@ class TicketWorkflowOpOwnerField(TicketWorkflowOpBase):
         label = actions[action]['name']
         hint = 'The owner will change to %s' % self._new_owner(action, ticket)
         control = tag('')
-        return (label, control, hint)
+        return label, control, hint
 
     def get_ticket_changes(self, req, ticket, action):
         """Returns the change of owner."""
@@ -192,7 +200,7 @@ class TicketWorkflowOpOwnerPrevious(TicketWorkflowOpBase):
         else:
             hint = 'The owner will be deleted.'
         control = tag('')
-        return (label, control, hint)
+        return label, control, hint
 
     def get_ticket_changes(self, req, ticket, action):
         """Returns the change of owner."""
@@ -200,16 +208,11 @@ class TicketWorkflowOpOwnerPrevious(TicketWorkflowOpBase):
 
     def _new_owner(self, ticket):
         """Determines the new owner"""
-        db = self.env.get_db_cnx()
-        cursor = db.cursor()
-        cursor.execute("SELECT oldvalue FROM ticket_change WHERE ticket=%s " \
-                       "AND field='owner' ORDER BY -time", (ticket.id, ))
-        row = cursor.fetchone()
-        if row:
-            owner = row[0]
-        else: # The owner has never changed.
-            owner = ticket['owner']
-        return owner
+        row = self.env.db_query("""
+          SELECT oldvalue FROM ticket_change WHERE ticket=%s
+          AND field='owner' ORDER BY -time
+          """, (ticket.id, ))
+        return row[0][0] if row else ticket['owner']
 
 
 class TicketWorkflowOpStatusPrevious(TicketWorkflowOpBase):
@@ -236,7 +239,7 @@ class TicketWorkflowOpStatusPrevious(TicketWorkflowOpBase):
         else:
             hint = ''
         control = tag('')
-        return (label, control, hint)
+        return label, control, hint
 
     def get_ticket_changes(self, req, ticket, action):
         """Returns the change of status."""
@@ -248,16 +251,11 @@ class TicketWorkflowOpStatusPrevious(TicketWorkflowOpBase):
 
     def _new_status(self, ticket):
         """Determines the new status"""
-        db = self.env.get_db_cnx()
-        cursor = db.cursor()
-        cursor.execute("SELECT oldvalue FROM ticket_change WHERE ticket=%s " \
-                       "AND field='status' ORDER BY -time", (ticket.id, ))
-        row = cursor.fetchone()
-        if row:
-            status = row[0]
-        else: # The status has never changed.
-            status = 'new'
-        return status
+        row = self.env.db_query("""
+          SELECT oldvalue FROM ticket_change WHERE ticket=%s
+          AND field='status' ORDER BY -time
+          """, (ticket.id, ))
+        return row[0][0] if row else 'new'
 
 
 class TicketWorkflowOpRunExternal(TicketWorkflowOpBase):
@@ -303,7 +301,7 @@ class TicketWorkflowOpRunExternal(TicketWorkflowOpBase):
                                action + '.run_external').strip()
         if hint is None:
             hint = "Will run external script."
-        return (label, tag(''), hint)
+        return label, tag(''), hint
 
     def get_ticket_changes(self, req, ticket, action):
         """No changes to the ticket"""
@@ -318,11 +316,14 @@ class TicketWorkflowOpRunExternal(TicketWorkflowOpBase):
                 script += extension
                 break
         else:
-            self.env.log.error("Error in ticket workflow config; could not find external command to run for %s in %s" % (action, os.path.join(self.env.path, 'hooks')))
+            self.env.log.error("Error in ticket workflow config; could not "
+                               "find external command to run for %s in %s",
+                               action, os.path.join(self.env.path, 'hooks'))
             return
         retval = call([script, str(ticket.id), req.authname])
         if retval:
-            self.env.log.error("External script %r exited with return code %s." % (script, retval))
+            self.env.log.error("External script %r exited with return code "
+                               "%s.", script, retval)
 
 
 class TicketWorkflowOpTriage(TicketWorkflowOpBase):
@@ -354,7 +355,7 @@ class TicketWorkflowOpTriage(TicketWorkflowOpBase):
         else:
             hint = ''
         control = tag('')
-        return (label, control, hint)
+        return label, control, hint
 
     def get_ticket_changes(self, req, ticket, action):
         """Returns the change of status."""
@@ -371,7 +372,8 @@ class TicketWorkflowOpTriage(TicketWorkflowOpBase):
             if value == ticket[field].strip():
                 break
         else:
-            self.env.log.error("Bad configuration for 'triage' operation in action '%s'" % action)
+            self.env.log.error("Bad configuration for 'triage' operation in "
+                               "action '%s'", action)
             status = 'new'
         return status
 
@@ -403,38 +405,42 @@ class TicketWorkflowOpXRef(TicketWorkflowOpBase):
         actions = self.get_configurable_workflow().actions
         label = actions[action]['name']
         hint = actions[action].get('xref_hint',
-            'The specified ticket will be cross-referenced with this ticket')
+                                   'The specified ticket will be '
+                                   'cross-referenced with this ticket')
         control = tag.input(type='text', id=id, name=id, value=ticketnum)
-        return (label, control, hint)
+        return label, control, hint
 
     def get_ticket_changes(self, req, ticket, action):
         # WARNING: Directly modifying the ticket in this method breaks the
         # intent of this method.  But it does accomplish the desired goal.
         if not 'preview' in req.args:
             id = 'action_%s_xref' % action
-            ticketnum = req.args.get(id).strip('#')
+            ticket_num = req.args.get(id).strip('#')
 
             try:
-                xticket = model.Ticket(self.env, ticketnum)
+                model.Ticket(self.env, ticket_num)
             except ValueError:
                 req.args['preview'] = True
-                add_warning(req, 'The cross-referenced ticket number "%s" was not a number' % ticketnum)
+                add_warning(req, 'The cross-referenced ticket number "%s" '
+                                 'was not a number', ticket_num)
                 return {}
             except ResourceNotFound, e:
                 #put in preview mode to prevent ticket being saved
                 req.args['preview'] = True
-                add_warning(req, "Unable to cross-reference Ticket #%s (%s)." % (ticketnum, e.message))
+                add_warning(req, "Unable to cross-reference Ticket #%s (%s).",
+                            ticket_num, e.message)
                 return {}
 
             oldcomment = req.args.get('comment')
             actions = self.get_configurable_workflow().actions
             format_string = actions[action].get('xref_local',
-                'Ticket %s was marked as related to this ticket')
-            # Add a comment to this ticket to indicate that the "remote" ticket is
-            # related to it.  (But only if <action>.xref_local was set in the
-            # config.)
+                                                "Ticket %s was marked as "
+                                                "related to this ticket")
+            # Add a comment to this ticket to indicate that the "remote"
+            # ticket is related to it.  (But only if <action>.xref_local
+            # was set in the config.)
             if format_string:
-                comment = format_string % ('#%s' % ticketnum)
+                comment = format_string % ('#%s' % ticket_num)
                 req.args['comment'] = "%s%s%s" % \
                     (comment, oldcomment and "[[BR]]" or "", oldcomment or "")
 
@@ -451,8 +457,8 @@ class TicketWorkflowOpXRef(TicketWorkflowOpBase):
 
         # Add a comment to the "remote" ticket to indicate this ticket is
         # related to it.
-        format_string = actions[action].get('xref',
-                                        'Ticket %s is related to this ticket')
+        format_string = actions[action].get('xref', "Ticket %s is related "
+                                                    "to this ticket")
         comment = format_string % ('#%s' % ticket.id)
         # FIXME: we need a cnum to avoid messing up 
         xticket = model.Ticket(self.env, ticketnum)
@@ -467,7 +473,7 @@ class TicketWorkflowOpXRef(TicketWorkflowOpBase):
             tn.notify(xticket, newticket=False, modtime=now)
         except Exception, e:
             self.log.exception("Failure sending notification on change to "
-                               "ticket #%s: %s" % (ticketnum, e))
+                               "ticket #%s: %s", ticketnum, e)
 
 
 class TicketWorkflowOpResetMilestone(TicketWorkflowOpBase):
@@ -495,17 +501,17 @@ class TicketWorkflowOpResetMilestone(TicketWorkflowOpBase):
         actions = self.get_configurable_workflow().actions
         label = actions[action]['name']
         # check if the assigned milestone has been completed
-        milestone = Milestone(self.env,ticket['milestone'])
+        milestone = Milestone(self.env, ticket['milestone'])
         if milestone.is_completed:
             hint = 'The milestone will be reset'
         else:
             hint = ''
         control = tag('')
-        return (label, control, hint)
+        return label, control, hint
 
     def get_ticket_changes(self, req, ticket, action):
         """Returns the change of milestone, if needed."""
-        milestone = Milestone(self.env,ticket['milestone'])
+        milestone = Milestone(self.env, ticket['milestone'])
         if milestone.is_completed:
             return {'milestone': ''}
         return {}
