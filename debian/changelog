@@ -1,3 +1,9 @@
+trac-advancedworkflow (1.2.0+svn16171-aroth2) yakkety; urgency=medium
+
+  * add missing dh-python depend
+
+ -- Andreas Roth <aroth@arsoft-online.com>  Mon, 02 Jan 2017 14:54:53 +0100
+
 trac-advancedworkflow (1.2.0+svn16171-aroth1) yakkety; urgency=medium
 
   * new upstream version 1.2.0 for trac>=1.2
