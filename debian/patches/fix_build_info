@@ -1,0 +1,5 @@
+--- a/setup.cfg
++++ b/setup.cfg
+@@ -1,2 +1 @@
+ [egg_info]
+-tag_build = dev

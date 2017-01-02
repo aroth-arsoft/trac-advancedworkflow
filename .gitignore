@@ -1,3 +1,5 @@
 /build/
 /AdvancedTicketWorkflowPlugin.egg-info/
 /build-stamp
+/.pybuild/
+/.pc/

@@ -1,50 +1,16 @@
 #!/usr/bin/make -f
-# -*- makefile -*-
 
-PACKAGE=trac-advancedworkflow
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+export PYBUILD_NAME=trac-advancedworkflow
 
-DH_VERBOSE=1
+%:
+	dh $@ --with python2 --buildsystem=pybuild
 
-clean:
-	dh_testdir
-	dh_testroot
-	rm -rf build-stamp *.egg-info
-	python setup.py clean
-	-rm -rf build/
-	-rm -rf dist/
-	dh_clean 
+override_dh_clean:
+	dh_clean
+	[ -d *.egg-info ] && rm -rf *.egg-info || true
 
-build: build-arch build-indep
-build-arch: build-stamp
-build-indep: build-stamp
-
-build-stamp:
-	dh_testdir
-	python setup.py build
-	touch $@
-
-install: build
-	dh_testdir
-	dh_testroot
-	dh_prep
-	dh_installdirs
-	python setup.py install --root="$(CURDIR)/debian/${PACKAGE}" --no-compile
-
-binary-indep: build install
-	dh_testdir
-	dh_testroot
-	dh_installchangelogs
-	dh_installdocs
-	dh_compress
-	dh_fixperms
-	dh_python2
-	dh_installdeb
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
-
-binary-arch: build install
-
-binary: binary-indep binary-arch
-
-.PHONY: get-orig-source clean build install binary-indep binary-arch binary
+override_dh_fixperms:
+	cp *.egg-info/SOURCES.txt $(shell readlink -f debian/$(PYBUILD_NAME)/usr/lib/python*/dist-packages/*.egg-info)/SOURCES.txt
+	dh_fixperms -O--buildsystem=pybuild

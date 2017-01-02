@@ -1,3 +1,9 @@
+trac-advancedworkflow (1.2.0+svn16171-aroth1) yakkety; urgency=medium
+
+  * new upstream version 1.2.0 for trac>=1.2
+
+ -- Andreas Roth <aroth@arsoft-online.com>  Mon, 02 Jan 2017 14:38:09 +0100
+
 trac-advancedworkflow (0.12+svn14992-1~aroth~ppa1) wily; urgency=medium
 
   * update to version 0.12
