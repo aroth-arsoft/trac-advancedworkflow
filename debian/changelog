@@ -1,3 +1,9 @@
+trac-advancedworkflow (1.2.1+svn17350-aroth1) cosmic; urgency=medium
+
+  * new upstream revision 17350
+
+ -- Andreas Roth <aroth@arsoft-online.com>  Wed, 06 Mar 2019 19:02:10 +0100
+
 trac-advancedworkflow (1.2.1+svn16676-aroth2~17.04.1) zesty; urgency=medium
 
   * disable tests 

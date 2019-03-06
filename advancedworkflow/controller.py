@@ -16,10 +16,11 @@ from pkg_resources import resource_filename
 from subprocess import call
 
 from trac.core import implements, Component
+from trac.notification.api import NotificationSystem
 from trac.ticket import model
 from trac.ticket.api import ITicketActionController, TicketSystem
 from trac.ticket.default_workflow import ConfigurableTicketWorkflow
-from trac.ticket.notification import TicketNotifyEmail
+from trac.ticket.notification import TicketChangeEvent 
 from trac.resource import ResourceNotFound
 from trac.util.datefmt import utc
 from trac.util.html import html
@@ -203,6 +204,82 @@ class TicketWorkflowOpOwnerField(TicketWorkflowOpBase):
         field = self.config.get('ticket-workflow',
                                 action + '.' + self._op_name).strip()
         return ticket[field]
+
+
+class TicketWorkflowOpFieldAuthor(TicketWorkflowOpBase):
+    """Sets the value of a ticket field to the current user
+
+    <someaction>.operations = set_field_to_author
+    <someaction>.set_field_to_author = myfield
+
+    Don't forget to add the `TicketWorkflowOpFieldAuthor` to the workflow
+    option in [ticket].
+    If there is no workflow option, the line will look like this:
+
+    workflow = ConfigurableTicketWorkflow,TicketWorkflowOpFieldAuthor
+    """
+
+    _op_name = 'set_field_to_author'
+
+    # ITicketActionController methods
+
+    def render_ticket_action_control(self, req, ticket, action):
+        """Returns the action control"""
+        actions = ConfigurableTicketWorkflow(self.env).actions
+        label = actions[action]['name']
+        hint = _("The '%(field)s' field will be set to '%(username)s'.",
+            field=self._field_name(action, ticket),
+            username=req.authname)
+        control = tag('')
+        return (label, control, hint)
+
+    def get_ticket_changes(self, req, ticket, action):
+        """Returns the change of the field."""
+        return {self._field_name(action, ticket): req.authname}
+
+    def _field_name(self, action, ticket):
+        """Determines the field to set to self """
+        field = self.config.get('ticket-workflow',
+                                action + '.' + self._op_name).strip()
+        return field
+
+
+class TicketWorkflowOpFieldsClear(TicketWorkflowOpBase):
+    """Clears the value of the ticket field(s)
+
+    <someaction>.operations = clear_fields
+    <someaction>.clear_fields = myfield_one, myfield_two
+
+    Don't forget to add the `TicketWorkflowOpFieldsClear` to the workflow
+    option in [ticket].
+    If there is no workflow option, the line will look like this:
+
+    workflow = ConfigurableTicketWorkflow,TicketWorkflowOpFieldsClear
+    """
+
+    _op_name = 'clear_fields'
+
+    # ITicketActionController methods
+
+    def render_ticket_action_control(self, req, ticket, action):
+        """Returns the action control"""
+        actions = ConfigurableTicketWorkflow(self.env).actions
+        label = actions[action]['name']
+        fields = ["'%s'" % x for x in self._field_names(action, ticket)]
+        hint = ngettext("The %(fields)s field will be cleared.",
+                        "The %(fields)s fields will be cleared.", len(fields),
+                        fields=', '.join(fields))
+        control = tag('')
+        return (label, control, hint)
+
+    def get_ticket_changes(self, req, ticket, action):
+        """Returns the changes to the fields."""
+        return {x: '' for x in self._field_names(action, ticket)}
+
+    def _field_names(self, action, ticket):
+        """Determines the fields to set to blank """
+        return self.config.getlist('ticket-workflow',
+                                   action + '.' + self._op_name)
 
 
 class TicketWorkflowOpOwnerPrevious(TicketWorkflowOpBase):
@@ -493,10 +570,10 @@ class TicketWorkflowOpXRef(TicketWorkflowOpBase):
         now = datetime.now(utc)
         xticket.save_changes(author, comment, now)
 
-        #Send notification on the other ticket
+        # Send notification on the other ticket
+        event = TicketChangeEvent('changed', xticket, now, author)
         try:
-            tn = TicketNotifyEmail(self.env)
-            tn.notify(xticket, newticket=False, modtime=now)
+            NotificationSystem(self.env).notify(event)
         except Exception, e:
             self.log.exception("Failure sending notification on change to "
                                "ticket #%s: %s", ticketnum, e)
