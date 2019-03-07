@@ -1,3 +1,10 @@
+trac-advancedworkflow (1.2.1+svn17350-aroth2) cosmic; urgency=medium
+
+  * allow to run with trac 1.2.3
+  * add TicketWorkflowOpSetState for set_state operation
+
+ -- Andreas Roth <aroth@arsoft-online.com>  Thu, 07 Mar 2019 07:26:00 +0100
+
 trac-advancedworkflow (1.2.1+svn17350-aroth1) cosmic; urgency=medium
 
   * new upstream revision 17350
