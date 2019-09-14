@@ -1,3 +1,10 @@
+trac-advancedworkflow (1.2.1+svn17497-1) disco; urgency=medium
+
+  * Automatic update 1.2.1 from https://trac-hacks.org/browser/advance
+    dticketworkflowplugin/1.2/?format=zip&rev=17497 revision 17497
+
+ -- Andreas Roth <aroth@arsoft-online.com>  Sat, 14 Sep 2019 17:49:25 +0200
+
 trac-advancedworkflow (1.2.1+svn17350-aroth2) cosmic; urgency=medium
 
   * allow to run with trac 1.2.3

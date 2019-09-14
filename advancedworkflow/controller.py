@@ -20,7 +20,7 @@ from trac.notification.api import NotificationSystem
 from trac.ticket import model
 from trac.ticket.api import ITicketActionController, TicketSystem
 from trac.ticket.default_workflow import ConfigurableTicketWorkflow
-from trac.ticket.notification import TicketChangeEvent 
+from trac.ticket.notification import TicketChangeEvent
 from trac.resource import ResourceNotFound
 from trac.util.datefmt import utc
 from trac.util.html import html
@@ -74,7 +74,7 @@ class TicketWorkflowOpBase(Component):
     def render_ticket_action_control(self, req, ticket, action):
         """Returns the action control"""
         actions = self.get_configurable_workflow().actions
-        label = actions[action]['name']
+        label = actions[action]['label']
         return label, '', ''
 
     def get_ticket_changes(self, req, ticket, action):
@@ -122,7 +122,7 @@ class TicketWorkflowOpOwnerReporter(TicketWorkflowOpBase):
     def render_ticket_action_control(self, req, ticket, action):
         """Returns the action control"""
         actions = self.get_configurable_workflow().actions
-        label = actions[action]['name']
+        label = actions[action]['label']
         hint = self._get_hint_to_change_owner(req, ticket, ticket['reporter'])
         return label, '', hint
 
@@ -150,7 +150,7 @@ class TicketWorkflowOpOwnerComponent(TicketWorkflowOpBase):
     def render_ticket_action_control(self, req, ticket, action):
         """Returns the action control"""
         actions = self.get_configurable_workflow().actions
-        label = actions[action]['name']
+        label = actions[action]['label']
         hint = self._get_hint_to_change_owner(req, ticket,
                                               self._new_owner(ticket))
         return label, '', hint
@@ -189,7 +189,7 @@ class TicketWorkflowOpOwnerField(TicketWorkflowOpBase):
     def render_ticket_action_control(self, req, ticket, action):
         """Returns the action control"""
         actions = self.get_configurable_workflow().actions
-        label = actions[action]['name']
+        label = actions[action]['label']
         new_owner = self._new_owner(action, ticket)
         hint = self._get_hint_to_change_owner(req, ticket, new_owner)
         return label, '', hint
@@ -226,11 +226,11 @@ class TicketWorkflowOpFieldAuthor(TicketWorkflowOpBase):
     def render_ticket_action_control(self, req, ticket, action):
         """Returns the action control"""
         actions = ConfigurableTicketWorkflow(self.env).actions
-        label = actions[action]['name']
+        label = actions[action]['label']
         hint = _("The '%(field)s' field will be set to '%(username)s'.",
             field=self._field_name(action, ticket),
             username=req.authname)
-        control = tag('')
+        control = html('')
         return (label, control, hint)
 
     def get_ticket_changes(self, req, ticket, action):
@@ -264,12 +264,12 @@ class TicketWorkflowOpFieldsClear(TicketWorkflowOpBase):
     def render_ticket_action_control(self, req, ticket, action):
         """Returns the action control"""
         actions = ConfigurableTicketWorkflow(self.env).actions
-        label = actions[action]['name']
+        label = actions[action]['label']
         fields = ["'%s'" % x for x in self._field_names(action, ticket)]
         hint = ngettext("The %(fields)s field will be cleared.",
                         "The %(fields)s fields will be cleared.", len(fields),
                         fields=', '.join(fields))
-        control = tag('')
+        control = html('')
         return (label, control, hint)
 
     def get_ticket_changes(self, req, ticket, action):
@@ -299,7 +299,7 @@ class TicketWorkflowOpOwnerPrevious(TicketWorkflowOpBase):
     def render_ticket_action_control(self, req, ticket, action):
         """Returns the action control"""
         actions = self.get_configurable_workflow().actions
-        label = actions[action]['name']
+        label = actions[action]['label']
         new_owner = self._new_owner(ticket)
         hint = self._get_hint_to_change_owner(req, ticket, new_owner)
         return label, '', hint
@@ -334,7 +334,7 @@ class TicketWorkflowOpStatusPrevious(TicketWorkflowOpBase):
     def render_ticket_action_control(self, req, ticket, action):
         """Returns the action control"""
         actions = self.get_configurable_workflow().actions
-        label = actions[action]['name']
+        label = actions[action]['label']
         new_status = self._new_status(ticket)
         if new_status != self._old_status(ticket):
             hint = _("The status will be changed to %(status)s.",
@@ -398,7 +398,7 @@ class TicketWorkflowOpRunExternal(TicketWorkflowOpBase):
     def render_ticket_action_control(self, req, ticket, action):
         """Returns the action control"""
         actions = self.get_configurable_workflow().actions
-        label = actions[action]['name']
+        label = actions[action]['label']
         hint = self.config.get('ticket-workflow',
                                action + '.run_external').strip()
         if not hint:
@@ -450,7 +450,7 @@ class TicketWorkflowOpTriage(TicketWorkflowOpBase):
     def render_ticket_action_control(self, req, ticket, action):
         """Returns the action control"""
         actions = self.get_configurable_workflow().actions
-        label = actions[action]['name']
+        label = actions[action]['label']
         new_status = self._new_status(ticket, action)
         if not ticket.exists:
             hint = _("The status will be '%(name)s'.", name=new_status)
@@ -506,7 +506,7 @@ class TicketWorkflowOpXRef(TicketWorkflowOpBase):
         id = 'action_%s_xref' % action
         ticketnum = req.args.get(id, '')
         actions = self.get_configurable_workflow().actions
-        label = actions[action]['name']
+        label = actions[action]['label']
         hint = actions[action].get('xref_hint') or \
                _("The specified ticket will be cross-referenced with this "
                  "ticket.")
@@ -602,7 +602,7 @@ class TicketWorkflowOpResetMilestone(TicketWorkflowOpBase):
     def render_ticket_action_control(self, req, ticket, action):
         """Returns the action control"""
         actions = self.get_configurable_workflow().actions
-        label = actions[action]['name']
+        label = actions[action]['label']
         # check if the assigned milestone has been completed
         milestone = self._fetch_milestone(ticket)
         if milestone and milestone.is_completed:
