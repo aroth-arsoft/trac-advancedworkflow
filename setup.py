@@ -25,14 +25,14 @@ except ImportError:
 
 setup(
     name='TracAdvancedTicketWorkflow',
-    version='1.2.1',
+    version='1.2.2',
     author='Eli Carter',
     author_email='elicarter@retracile.net',
     license='3-Clause BSD',
     description='Advanced workflow operations Trac plugin',
     long_description='Provides more advanced workflow operations for Trac 1.2',
     url='https://trac-hacks.org/wiki/AdvancedTicketWorkflowPlugin',
-
+    classifiers=['Framework :: Trac'],
     packages=find_packages(),
     package_data={
         'advancedworkflow': [
