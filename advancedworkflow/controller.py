@@ -96,6 +96,12 @@ class TicketWorkflowOpBase(Component):
         else:
             return _("The owner will be deleted.")
 
+    def _get_hint_to_change_state(self, req, ticket, status):
+        if ticket['status'] is None:
+            return _("The status will be '%(name)s'", name=status)
+        else:
+            return _("Next status will be '%(name)s'", name=status)
+
     def _format_author(self, req, author):
         return Chrome(self.env).format_author(req, author)
 
@@ -625,3 +631,38 @@ class TicketWorkflowOpResetMilestone(TicketWorkflowOpBase):
             except ResourceNotFound, e:
                 self.log.warning("In %s, %s", self._op_name, to_unicode(e))
         return None
+
+
+class TicketWorkflowOpSetState(TicketWorkflowOpBase):
+    """Sets the state of the ticket when executing another operation.
+
+    Don't forget to add the `TicketWorkflowOpSetState` to the workflow
+    option in [ticket].
+    If there is no workflow option, the line will look like this:
+
+    workflow = ConfigurableTicketWorkflow,TicketWorkflowOpSetState
+    """
+
+    _op_name = 'set_state'
+
+    # ITicketActionController methods
+
+    def render_ticket_action_control(self, req, ticket, action):
+        """Returns the action control"""
+        actions = self.get_configurable_workflow().actions
+        label = actions[action]['name']
+        newstate = actions[action]['newstate']
+        if newstate == ticket['status']:
+            hint = ''
+        else:
+            hint = self._get_hint_to_change_state(req, ticket, newstate)
+        return label, '', hint
+
+    def get_ticket_changes(self, req, ticket, action):
+        """Returns the change of owner."""
+        actions = self.get_configurable_workflow().actions
+        newstate = actions[action]['newstate']
+        if newstate == ticket['status']:
+            return {}
+        else:
+            return {'status': newstate}
